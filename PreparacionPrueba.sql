@@ -35,3 +35,11 @@ join detalle_factura df on p.CODIGO_PROD = df.CODIGO_PROD
 group by p.codigo_prod 
 order by mas_repetido desc)
 where rownum = 1;
+
+/* 3 */
+select * from(
+select  p.CODIGO_PROD, p.PRECIO, df.NUM_FACTURA
+from producto p 
+join detalle_factura df on p.CODIGO_PROD = df.CODIGO_PROD
+order by p.precio desc)
+where rownum = 1;
