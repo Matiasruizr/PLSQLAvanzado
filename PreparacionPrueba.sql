@@ -100,3 +100,18 @@ where df.CANTIDAD > 0
 order by precio desc)
 where rownum = 1;
 
+/* 10 */
+select * from(
+select cl.rut, count(f.NUM_FACTURA) as compras from cliente cl
+join factura f on cl.rut = f.rut_cliente
+group by cl.rut
+order by compras desc)
+where rownum = 1;
+
+/* 11 - . Cuál es el cliente que menos compras ha realizado (que efectivamente hubiera comprado algo) y cuál es el producto más barato que compró. */
+select cl.rut, count(f.NUM_FACTURA), p.DESCRIPCION as compras from cliente cl
+join factura f on cl.rut = f.rut_cliente
+join DETALLE_FACTURA df on f.NUM_FACTURA = df.NUM_FACTURA
+join PRODUCTO p on df.CODIGO_PROD = p.CODIGO_PROD
+group by cl.rut, p.DESCRIPCION
+order by compras asc;
