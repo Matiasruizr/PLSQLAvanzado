@@ -1,4 +1,27 @@
 set serveroutput on;
+/* 1. Se requiere realizar la disminución automática de las existencias de productos,
+realice un trigger que normalice la cantidad de productos de acuerdo a los detalles 
+de factura ingresados realizados con las existencias en productos. */
+
+select * from producto;
+
+DECLARE 
+    CURSOR C_PRODUCTOS IS SELECT * FROM PRODUCTO;
+    CURSOR C_DETALLE_FACTURA IS SELECT CODIGO_PROD, SUM(CANTIDAD) AS CANTIDAD 
+                                FROM DETALLE_FACTURA
+                                GROUP BY CODIGO_PROD;
+BEGIN
+    FOR P IN C_PRODUCTOS LOOP
+        DBMS_OUTPUT.PUT_LINE(P.CODIGO_PROD);        
+        FOR DF IN C_DETALLE_FACTURA LOOP
+            IF P.CODIGO_PROD = DF.CODIGO_PROD THEN
+            DBMS_OUTPUT.PUT_LINE(DF.CODIGO_PROD|| ' ES IGUAL A '||P.CODIGO_PROD||' Y SE HAN VENDIDO '||DF.CANTIDAD||' DE UN TOTAL DE  '||P.EXISTENCIAS);
+            END IF;
+        END LOOP;
+    END LOOP;
+END;
+/
+
 /* 4. Cree un procedimiento almacenado que normalice el valor de subtotal
 de los detalles de las facturas, para confirmar lo
 realizado debe crear un bloque anónimo que compruebe los datos ingresados 
