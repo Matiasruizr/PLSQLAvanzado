@@ -8,7 +8,7 @@ CREATE OR REPLACE PROCEDURE SP_ERROR(V_ID IN NUMBER, V_USUARIO IN VARCHAR2, V_SQ
     V_ERROR NUMBER;  
     V_INSERCION VARCHAR2(200);
 BEGIN
-    V_INSERCION := 'insert into error values('||V_ID||','||sysdate||','||V_USUARIO||','||V_SQLERM||')';
+    V_INSERCION := 'insert into error values('||V_ID||','||''''||sysdate||''''||','||''''||V_USUARIO||''''||','||''''||V_SQLERM||''''||')';
     -- Comprueba si existe la tabla error.
     SELECT COUNT(TNAME) 
     INTO V_ERROR
@@ -20,14 +20,14 @@ BEGIN
         EXECUTE IMMEDIATE 'create table error(id number, fecha date, usuario varchar2(39), error varchar2(250) )';
      END IF;
         --Inseta los datos pasados por parametro en la tabla error
-       EXECUTE IMMEDIATE V_INSERCION;
+     EXECUTE IMMEDIATE V_INSERCION;
    
 END SP_ERROR;
 /
 insert into error values(1,sysdate,'USER','ERROR');
 DECLARE 
 BEGIN
-    SP_ERROR(2,'USUARIO','ERROR');
+    SP_ERROR(3,'MATIAS','ERROR 2');
 END;
 /
 
