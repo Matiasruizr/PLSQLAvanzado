@@ -31,30 +31,7 @@ WHERE to_char(FECHA, 'MM') = 06
 AND to_char(FECHA, 'YY') = 17;
 
 
-CREATE OR REPLACE FUNCTION 
-    CALCULO_SUBTOTAL(V_MES IN NUMBER, V_ANIO IN NUMBER) RETURN NUMBER IS
-    CURSOR C_FACTURAS IS SELECT * FROM FACTURA 
-                        JOIN DETALLE_FACTURA ON FACTURA.NUM_FACTURA = DETALLE_FACTURA.NUM_FACTURA
-                        JOIN PRODUCTO ON DETALLE_FACTURA.CODIGO_PROD = PRODUCTO.CODIGO_PROD
-                        WHERE to_char(FECHA, 'MM') = V_MES
-                        AND to_char(FECHA, 'YY') = V_ANIO;
-   V_SUBTOTAL NUMBER := 0;                     
-BEGIN
-    FOR F IN C_FACTURAS LOOP
-         V_SUBTOTAL := V_SUBTOTAL + (F.PRECIO * F.CANTIDAD);
-        
-    END LOOP; 
-    
-     RETURN V_SUBTOTAL;
-END CALCULO_SUBTOTAL;
-/
 
-DECLARE
-
-BEGIN
-    DBMS_OUTPUT.PUT_LINE(CALCULO_SUBTOTAL(05,17));
-END;
-/
 DECLARE
     CURSOR C_FACTURAS IS SELECT * FROM FACTURA 
                         JOIN DETALLE_FACTURA ON FACTURA.NUM_FACTURA = DETALLE_FACTURA.NUM_FACTURA
@@ -106,7 +83,7 @@ END;
 /
 
 CREATE OR REPLACE PACKAGE BODY PKG_CUENTAS_CONSOLIDADAS IS
-
+    V_PORC_IVA NUMBER 19;
 BEGIN
     
     
@@ -114,6 +91,8 @@ END;
 /
 
 drop function CALCULO_NETO;
+
+select * from factura;
 
 -- D)
 CREATE OR REPLACE FUNCTION 
@@ -124,17 +103,54 @@ CREATE OR REPLACE FUNCTION
                         WHERE to_char(FECHA, 'MM') = V_MES
                         AND to_char(FECHA, 'YY') = V_ANIO
                         AND FACTURA.NUM_FACTURA = V_NUM_FACTURA;
-   V_SUBTOTAL NUMBER := 0;                     
+   V_SUBTOTAL NUMBER := 0;    
+   V_DESCUENTO NUMBER := 0;
 BEGIN
     FOR F IN C_FACTURAS LOOP
-         V_SUBTOTAL := V_SUBTOTAL + (F.PRECIO * F.CANTIDAD);    
+         V_SUBTOTAL := V_SUBTOTAL + (F.PRECIO * F.CANTIDAD);  
+         V_DESCUENTO := F.DESCUENTO;
     END LOOP; 
-    
+         V_SUBTOTAL := V_SUBTOTAL- (V_SUBTOTAL *(V_DESCUENTO/100)); 
      RETURN V_SUBTOTAL;
 END CALCULO_NETO;
 /
 
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE(CALCULO_NETO(4857,05,17));
+ DBMS_OUTPUT.PUT_LINE(CALCULO_NETO(4875,06,17));
 END;
+/
+
+
+
+
+
+/*
+Debe controlar cualquier tipo de error que se produzca en el trigger, por ello debe
+ingresar de acuerdo al formato solicitado los errores producidos en la tabla
+LOG_ERROR, para el cual debe ingresar ID_LOG utilizando la secuencia
+SQ_ERROR_LOG.
+*/
+
+create table errores_tablas
+ (
+ id number  not null,
+  fecha date not null,
+  detalle_error varchar2(150) not null,
+  usuario varchar2(30) not null
+  );
+  
+create sequence sq_errores_tabla start with 1;
+  
+
+/*
+
+2.2
+*/
+create or replace trigger trg_proteger_tablas
+before drop on prueba3.schema
+begin
+  raise_application_error(-20001,'no se puede borrar una tabla');
+  insert into errores_tablas values(sq_errores_tabla.nextval,sysdate,'no se puede borrar la tabla',user);
+end trg_proteger_tablas;
+/
